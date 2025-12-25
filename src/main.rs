@@ -12,4 +12,6 @@ fn main() {
     println!("Loading program from {}", program_path);
     let program_data = fs::read(program_path).expect("Failed to read program file");
     cpu.load_program(&program_data);
+    
+    
 }
