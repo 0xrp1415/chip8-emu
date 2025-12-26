@@ -1,6 +1,5 @@
-use std::{fs, sync::Arc, thread};
+use std::{fs, thread};
 
-use sdl2::{event::Event, keyboard::Keycode};
 
 mod display;
 mod keybinds;

@@ -15,7 +15,7 @@ pub fn RET(cpu: &mut cpu::cpu) {
 }
 
 /// Jump to a machine code routine at nnn (ignored on modern interpreters)
-pub fn SYS(cpu: &mut cpu::cpu, nnn: u16) {
+pub fn SYS(_cpu: &mut cpu::cpu, _nnn: u16) {
     // Ignored by mordern intterpreters
 }
 

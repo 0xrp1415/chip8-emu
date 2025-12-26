@@ -1,3 +1,4 @@
+#![allow(nonstandard_style)]
 use crate::{instruction, io::IOData, sprites::SPRITES};
 
 pub struct cpu {
