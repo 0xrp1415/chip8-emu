@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use crate::cpu;
 use rand;
 
@@ -20,6 +22,7 @@ pub fn SYS(cpu: &mut cpu::cpu, nnn: u16) {
 /// Jump to location nnn
 pub fn JP(cpu: &mut cpu::cpu, nnn: u16) {
     cpu.pc = nnn;
+    cpu.noinc = true;
 }
 
 /// Call subroutine at nnn
@@ -185,10 +188,10 @@ pub fn LD_VX_DT(cpu: &mut cpu::cpu, x: u16) {
 
 /// Wait for a key press, store the value of the key in Vx
 pub fn LD_VX_K(cpu: &mut cpu::cpu, x: u16) {
-    cpu.nop = true;
+    cpu.noinc = true;
     if cpu.io.keys[9] {
         cpu.registers[x as usize] = 9;
-        cpu.nop = false;
+        cpu.noinc = false;
     }
 }
 

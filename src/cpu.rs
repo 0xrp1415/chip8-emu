@@ -9,7 +9,7 @@ pub struct cpu {
     pub timers: [u8; 2],
     pub memory: [u8; 4096],
     pub io: IOData,
-    pub nop: bool,
+    pub noinc: bool,
 }
 
 impl cpu {
@@ -23,22 +23,18 @@ impl cpu {
             timers: [0; 2],
             memory: [0; 4096],
             io: IOData::new(),
-            nop: false,
+            noinc: false,
         }
     }
 
     pub fn decrement_timers(&mut self) {
-        for timer in self.timers.iter_mut() {
-            if *timer > 0 {
-                *timer -= 1;
-            }
+        
+        if self.timers[0] > 0 {
+            self.timers[0] -= 1;
         }
-    }
-
-    pub fn set_timer(&mut self, timer_index: usize, value: u8) {
-        if timer_index < self.timers.len() {
-            self.timers[timer_index] = value;
-        }
+        if self.timers[1] > 0 {
+            self.timers[1] -= 1;
+        }        
     }
 
     /// # **Load Program**
@@ -64,7 +60,8 @@ impl cpu {
     pub fn decode(&mut self) {
         let opcode = self.get_program_counter();
         let grp = opcode >> 12;
-
+        self.pc += if self.noinc  { 0 } else { 2 };
+        self.noinc = false;
         match grp {
             0x0 => match opcode {
                 0x00E0 => instruction::CLS(self),
@@ -239,9 +236,6 @@ impl cpu {
             }
         }
 
-        if !self.nop  {
-            self.pc += 2;
-        }
     }
 
     pub fn load_sprites(&mut self) {
