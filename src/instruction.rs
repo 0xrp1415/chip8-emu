@@ -141,36 +141,65 @@ pub fn RND_VX_byte(cpu: &mut cpu::cpu, x: u16, kk: u8) {
 
 /// Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision
 pub fn DRW_VX_VY_nibble(cpu: &mut cpu::cpu, x: u16, y: u16, n: u8) {
-    // Implementation needed
+    let vx = cpu.registers[x as usize] as usize;
+    let vy = cpu.registers[y as usize] as usize;
+    cpu.registers[0xF] = 0;
+
+    for byte_index in 0..n as usize {
+        let sprite_byte = cpu.memory[(cpu.index_reg + byte_index as u16) as usize];
+        for bit_index in 0..8 {
+            let sprite_pixel = (sprite_byte >> (7 - bit_index)) & 0x1;
+            let x_coord = (vx + bit_index) % 64;
+            let y_coord = (vy + byte_index) % 32;
+
+            let current_pixel = cpu.io.display[y_coord][x_coord];
+            let new_pixel = current_pixel ^ sprite_pixel;
+
+            if current_pixel == 1 && new_pixel == 0 {
+                cpu.registers[0xF] = 1;
+            }
+
+            cpu.io.display[y_coord][x_coord] = new_pixel;
+        }
+    }
 }
 
 /// Skip next instruction if key with the value of Vx is pressed
 pub fn SKP_VX(cpu: &mut cpu::cpu, x: u16) {
+    if cpu.io.keys[cpu.registers[x as usize] as usize]  {
+        cpu.pc += 2;
+    }
 }
 
 /// Skip next instruction if key with the value of Vx is not pressed
 pub fn SKNP_VX(cpu: &mut cpu::cpu, x: u16) {
-    // Implementation needed
+    if !cpu.io.keys[cpu.registers[x as usize] as usize]  {
+        cpu.pc += 2;
+    }
 }
 
 /// Set Vx = delay timer value
 pub fn LD_VX_DT(cpu: &mut cpu::cpu, x: u16) {
-    // Implementation needed
+    cpu.registers[x as usize] = cpu.timers[0];
 }
 
 /// Wait for a key press, store the value of the key in Vx
 pub fn LD_VX_K(cpu: &mut cpu::cpu, x: u16) {
-    // Implementation needed
+    cpu.nop = true;
+    if cpu.io.keys[9] {
+        cpu.registers[x as usize] = 9;
+        cpu.nop = false;
+    }
 }
 
 /// Set delay timer = Vx
 pub fn LD_DT_VX(cpu: &mut cpu::cpu, x: u16) {
-    // Implementation needed
+    cpu.timers[0] = cpu.registers[x as usize];
 }
 
 /// Set sound timer = Vx
 pub fn LD_ST_VX(cpu: &mut cpu::cpu, x: u16) {
-    // Implementation needed
+    cpu.timers[1] = cpu.registers[x as usize];
 }
 
 /// Set I = I + Vx

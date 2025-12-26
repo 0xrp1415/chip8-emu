@@ -2,6 +2,8 @@ use std::fs;
 
 mod instruction;
 mod cpu;
+mod sprites;
+mod io;
 
 fn main() {
     let mut cpu = cpu::cpu::new();
@@ -11,7 +13,7 @@ fn main() {
     let program_path = &args[1];
     println!("Loading program from {}", program_path);
     let program_data = fs::read(program_path).expect("Failed to read program file");
+    cpu.load_sprites();
     cpu.load_program(&program_data);
-    
     
 }

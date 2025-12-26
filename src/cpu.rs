@@ -1,4 +1,4 @@
-use crate::instruction;
+use crate::{instruction, io::IOData, sprites::SPRITES};
 
 pub struct cpu {
     pub registers: [u8; 16],
@@ -6,7 +6,10 @@ pub struct cpu {
     pub pc: u16,
     pub sp: u8,
     pub stack: [u16; 16],
+    pub timers: [u8; 2],
     pub memory: [u8; 4096],
+    pub io: IOData,
+    pub nop: bool,
 }
 
 impl cpu {
@@ -17,7 +20,24 @@ impl cpu {
             pc: 0x200,
             sp: 0,
             stack: [0; 16],
+            timers: [0; 2],
             memory: [0; 4096],
+            io: IOData::new(),
+            nop: false,
+        }
+    }
+
+    pub fn decrement_timers(&mut self) {
+        for timer in self.timers.iter_mut() {
+            if *timer > 0 {
+                *timer -= 1;
+            }
+        }
+    }
+
+    pub fn set_timer(&mut self, timer_index: usize, value: u8) {
+        if timer_index < self.timers.len() {
+            self.timers[timer_index] = value;
         }
     }
 
@@ -218,5 +238,15 @@ impl cpu {
                 panic!("Unknown opcode: {:04X}", opcode);
             }
         }
+
+        if !self.nop  {
+            self.pc += 2;
+        }
+    }
+
+    pub fn load_sprites(&mut self) {
+        let start_address = 0x50;
+        let end_address = start_address + (SPRITES.len() * 5);
+        self.memory[start_address..end_address].copy_from_slice(&SPRITES.as_flattened());
     }
 }
