@@ -3,7 +3,7 @@ use rand;
 
 /// Clear the display
 pub fn CLS(cpu: &mut cpu::cpu) {
-    // Implementation needed
+    cpu.io.clear_display();
 }
 
 /// Return from a subroutine
@@ -159,7 +159,7 @@ pub fn DRW_VX_VY_nibble(cpu: &mut cpu::cpu, x: u16, y: u16, n: u8) {
                 cpu.registers[0xF] = 1;
             }
 
-            cpu.io.display[y_coord][x_coord] = new_pixel;
+            cpu.io.set_pixel(x_coord, y_coord, new_pixel);
         }
     }
 }
