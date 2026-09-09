@@ -22,7 +22,6 @@ pub fn SYS(_cpu: &mut cpu::cpu, _nnn: u16) {
 /// Jump to location nnn
 pub fn JP(cpu: &mut cpu::cpu, nnn: u16) {
     cpu.pc = nnn;
-    cpu.noinc = true;
 }
 
 /// Call subroutine at nnn
@@ -144,16 +143,22 @@ pub fn RND_VX_byte(cpu: &mut cpu::cpu, x: u16, kk: u8) {
 
 /// Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision
 pub fn DRW_VX_VY_nibble(cpu: &mut cpu::cpu, x: u16, y: u16, n: u8) {
-    let vx = cpu.registers[x as usize] as usize;
-    let vy = cpu.registers[y as usize] as usize;
+    let vx = cpu.registers[x as usize] as usize % 64;
+    let vy = cpu.registers[y as usize] as usize % 32;
     cpu.registers[0xF] = 0;
 
     for byte_index in 0..n as usize {
         let sprite_byte = cpu.memory[(cpu.index_reg + byte_index as u16) as usize];
+        let y_coord = vy + byte_index;
+        if y_coord >= 32 {
+            break;
+        }
         for bit_index in 0..8 {
+            let x_coord = vx + bit_index;
+            if x_coord >= 64 {
+                break;
+            }
             let sprite_pixel = (sprite_byte >> (7 - bit_index)) & 0x1;
-            let x_coord = (vx + bit_index) % 64;
-            let y_coord = (vy + byte_index) % 32;
 
             let current_pixel = cpu.io.display[y_coord][x_coord];
             let new_pixel = current_pixel ^ sprite_pixel;
@@ -188,11 +193,13 @@ pub fn LD_VX_DT(cpu: &mut cpu::cpu, x: u16) {
 
 /// Wait for a key press, store the value of the key in Vx
 pub fn LD_VX_K(cpu: &mut cpu::cpu, x: u16) {
-    cpu.noinc = true;
-    if cpu.io.keys[9] {
-        cpu.registers[x as usize] = 9;
-        cpu.noinc = false;
+    for i in 0..16 {
+        if cpu.io.keys[i] {
+            cpu.registers[x as usize] = i as u8;
+            return;
+        }
     }
+    cpu.pc -= 2;
 }
 
 /// Set delay timer = Vx
@@ -212,7 +219,7 @@ pub fn ADD_I_VX(cpu: &mut cpu::cpu, x: u16) {
 
 /// Set I = location of sprite for digit Vx
 pub fn LD_F_VX(cpu: &mut cpu::cpu, x: u16) {
-    cpu.index_reg = (cpu.registers[x as usize] as u16) * 5;
+    cpu.index_reg = 0x50 + (cpu.registers[x as usize] as u16) * 5;
 }
 
 /// Store BCD representation of Vx in memory locations I, I+1, and I+2

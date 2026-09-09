@@ -10,7 +10,6 @@ pub struct cpu {
     pub timers: [u8; 2],
     pub memory: [u8; 4096],
     pub io: IOData,
-    pub noinc: bool,
 }
 
 impl cpu {
@@ -24,7 +23,6 @@ impl cpu {
             timers: [0; 2],
             memory: [0; 4096],
             io: IOData::new(),
-            noinc: false,
         }
     }
 
@@ -61,8 +59,7 @@ impl cpu {
     pub fn decode(&mut self) {
         let opcode = self.get_program_counter();
         let grp = opcode >> 12;
-        self.pc += if self.noinc  { 0 } else { 2 };
-        self.noinc = false;
+        self.pc += 2;
         match grp {
             0x0 => match opcode {
                 0x00E0 => instruction::CLS(self),
